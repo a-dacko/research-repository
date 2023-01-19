@@ -1,0 +1,78 @@
+---
+title: "Plots"
+author: "Aleksandra Dacko"
+date: "1/19/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Here I have created the plot of emission durations
+```{r }
+
+m=4
+means=c(12.5,37.5,62.5,87.5)
+meanlog<-sort(means)
+  datay<-dnorm(seq(-10,110,0.1), mean = means[1],sd=9)
+  med<-median(datay)
+  data<-data.frame(x=seq(-10,110,0.1),y=datay)
+  plot<-ggplot(data=data,aes(x=x,y=y))+geom_line()+theme_minimal()+ylab("density")+xlab("emission distribution")+ggtitle("Emission disribution for three levels of 'number of states' design factor")+geom_segment(aes(x =50, y =0, xend =50, yend = 0.045),lty=2)+geom_segment(aes(x =75, y =0, xend =75, yend = 0.052),lty=2)+geom_segment(aes(x =100, y =0, xend =100, yend = 0.06),lty=2)+geom_segment(aes(x =0, y =0.045, xend = 50, yend = 0.045))+geom_text(x=25, y=0.047, label="m=2")+geom_text(x=35, y=0.054, label="m=3")+geom_text(x=50, y=0.062, label="m=4")+geom_segment(aes(x =0, y =0.052, xend = 75, yend = 0.052),)+geom_segment(aes(x =0, y =0.06, xend = 100, yend = 0.06))#+ggtitle("HMM state dependent geometric dwell time distribution ")+xlim(c(0,12))#+geom_hline(yintercept = med,color=col[1])
+  for(s in 2:m){
+    datay<-dnorm(seq(-10,110,0.1), mean = means[s],sd=9)
+    med<-median(datay)
+    data<-data.frame(x=seq(-10,110,0.1),y=datay)
+    plot<-plot+geom_line(data=data,aes(x=x,y=y))+theme(plot.title = element_text(hjust = 0.5))
+  }
+svg(file="Plots/emiss.svg")
+  plot
+dev.off()
+```
+
+Here I have created the plot of dwell time durations
+```{r, warning=FALSE}
+library(RColorBrewer)
+set.seed(123)
+plot_lognorm<-function(m, means){
+  meanlog<-sort(means)
+  col<-brewer.pal(m, name='Dark2')
+  datay<-dnorm(seq(-10,110,0.1), mean = means[1],sd=9)
+  med<-median(datay)
+  data<-data.frame(x=seq(-10,110,0.1),y=datay)
+  plot<-ggplot(data=data,aes(x=x,y=y))+geom_line(color=col[1],size=2)+theme_bw()+ylab("density")+xlab("duration distribution")#+ggtitle("HMM state dependent geometric dwell time distribution ")+xlim(c(0,12))#+geom_hline(yintercept = med,color=col[1])
+  for(s in 2:m){
+    datay<-dnorm(seq(-10,110,0.1), mean = means[s],sd=9)
+    med<-median(datay)
+    data<-data.frame(x=seq(-10,110,0.1),y=datay)
+    plot<-plot+geom_line(data=data,aes(x=x,y=y),color=col[s],size=2)#+geom_hline(yintercept = med,color=col[s])
+  }
+  return(plot)
+}
+
+svg("Plots/Lnorm.svg")
+col<-brewer.pal(3, name='Dark2')
+datay<-dlnorm(seq(0,100,0.05), meanlog = log(1.4),sdlog = log(3))
+data<-data.frame(x=seq(0,100,0.05),y=datay)
+plot<-ggplot(data=data,aes(x=x,y=y))+geom_line(size=1,color=col[1])
+
+datay<-dlnorm(seq(0,100,0.05), meanlog = log(3.5),sdlog = log(3))
+data<-data.frame(x=seq(0,100,0.05),y=datay)
+plot<-plot+geom_line(data=data,aes(x=x,y=y),size=1,color=col[2])
+
+datay<-dlnorm(seq(0,100,0.05), meanlog = log(19.5),sdlog = log(3))
+data<-data.frame(x=seq(0,100,0.05),y=datay)
+plot<-plot+geom_line(data=data,aes(x=x,y=y),size=1,color=col[3])
+plot+theme_minimal()+ggtitle("Dwell-time distributions assumed by the simulation study")+xlab("dwell time")+ylab("density")+xlim(c(0,30))+theme(plot.title = element_text(hjust = 0.5))+geom_text(x=2.3, y=0.4, label="d=1.4",color=col[1])+geom_text(x=4.5, y=0.13, label="d=3.5",color=col[2])+geom_text(x=10, y=0.05, label="d=19.5",color=col[3])
+dev.off()
+# 
+# ggplot(data=data,aes(x=x,y=y))+geom_line()
+# set.seed(123)
+# data<-density(rlnorm(20000, log(15), sqrt(log(25))),from=-1,to=150)
+# set.seed(123)
+# data1<-density(rlnorm(20000, log(15), log(sqrt(25))),from=-1,to=150)#it is than correct
+# set.seed(123)
+# data2<-density(rlnorm(20000, log(15), log(5)),from=-1,to=150)
+# 
+# plot_lognorm(m=3,means=c(10,40,80))
+```
